@@ -2,7 +2,37 @@
 Fork of PyTorch Video Classification on Android  
 https://github.com/pytorch/android-demo-app/tree/master/TorchVideo
 
+
+## Quick Start
+
+### 1. Prepare the Model (Optional)
+
+#### Requirements
+
+- Python < 3.10
+- torch < 1.11
+- timm
+
+#### Steps
+
+1. 
+```bash
+git clone https://github.com/Vescrity/PTVDModel.git
+```
+
+2. read README of that repo.
+
+### 2. Build with Android Studio
+
+> Tips: 
+> Change java version to JAVA8 ( or a version < 13)
+
+`Settings > Build, Execution ... > Build Tools > Gradle > Gradle Projects > Gradle > Gradle JDK`
+
+### 3. Run the app
+
 ---
+
 
 # LICENSE
 
