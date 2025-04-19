@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "org.pytorch.demo.torchvideo"
+        applicationId 'org.ptvd.demo'
         minSdkVersion 28
         targetSdkVersion 30
         versionCode 1
