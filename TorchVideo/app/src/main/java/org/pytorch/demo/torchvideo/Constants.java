@@ -7,5 +7,5 @@ public final class Constants {
     public final static int COUNT_OF_FRAMES_PER_INFERENCE = 4;
     public final static int TARGET_VIDEO_SIZE = 160;
     public final static int MODEL_INPUT_SIZE = COUNT_OF_FRAMES_PER_INFERENCE * 3 * TARGET_VIDEO_SIZE * TARGET_VIDEO_SIZE;
-    public final static int TOP_COUNT = 5;
+    public final static int TOP_COUNT = 4;
 }

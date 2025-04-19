@@ -39,7 +39,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private final String TAG = MainActivity.class.getSimpleName();
-    private final String[] mTestVideos = {"video1", "video2", "video3"};
+    private final String[] mTestVideos = {"video1"};
 
     private Button mButtonPauseResume;
     private Button mButtonTest;
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             //mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "video_classification.ptl"));
 
             //BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "test.ptl"));
+            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "tt.ptl"));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("test.txt")));
 
             String line;
@@ -264,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private Pair<Integer[], Long> getResult(int fromMs, int toMs, MediaMetadataRetriever mmr) {
 
-        FloatBuffer inTensorBuffer = Tensor.allocateFloatBuffer(Constants.MODEL_INPUT_SIZE);
+        /*FloatBuffer inTensorBuffer = Tensor.allocateFloatBuffer(Constants.MODEL_INPUT_SIZE);
 
         // extract 4 frames for each second of the video and pack them to a float buffer to be converted to the model input tensor
         for (int i = 0; i < Constants.COUNT_OF_FRAMES_PER_INFERENCE; i++) {
@@ -299,7 +299,78 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         });
 
-        return new Pair<>(scoresIdx, inferenceTime);
+        return new Pair<>(scoresIdx, inferenceTime);*/
+           // 1. 定义跳帧间隔（例如每隔5帧处理1帧）
+            final int FRAME_SKIP_INTERVAL = 500; // 可配置为参数
+            int processedFrames = 0;
+            int totalFrames = 0;
+
+            // 2. 分配单帧的缓冲区（不再是多帧合并）
+            FloatBuffer inTensorBuffer = Tensor.allocateFloatBuffer(3 * Constants.TARGET_VIDEO_SIZE * Constants.TARGET_VIDEO_SIZE);
+
+            // 3. 初始化结果存储（假设模型输出类别数固定）
+            float[] accumulatedScores = new float[/*Constants.NUM_CLASSES*/ 4]; // 需定义常量
+            Arrays.fill(accumulatedScores, 0f);
+
+            final long startTime = SystemClock.elapsedRealtime();
+
+            // 4. 遍历视频帧，按间隔处理
+            for (long timeUs = fromMs * 1000; timeUs <= toMs * 1000; timeUs += (FRAME_SKIP_INTERVAL * 1000 / 30)) { // 假设30fps
+                Bitmap bitmap = mmr.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                if (bitmap == null) continue;
+
+                // 5. 单帧预处理（缩放+裁剪）
+                float ratio = Math.min(bitmap.getWidth(), bitmap.getHeight()) / (float) Constants.TARGET_VIDEO_SIZE;
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap,
+                        (int) (bitmap.getWidth() / ratio),
+                        (int) (bitmap.getHeight() / ratio),
+                        true);
+                Bitmap centerCroppedBitmap = Bitmap.createBitmap(
+                        resizedBitmap,
+                        resizedBitmap.getWidth() > resizedBitmap.getHeight() ? (resizedBitmap.getWidth() - resizedBitmap.getHeight()) / 2 : 0,
+                        resizedBitmap.getHeight() > resizedBitmap.getWidth() ? (resizedBitmap.getHeight() - resizedBitmap.getWidth()) / 2 : 0,
+                        Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE
+                );
+
+                // 6. 转换当前帧为Tensor输入
+                TensorImageUtils.bitmapToFloatBuffer(
+                        centerCroppedBitmap, 0, 0,
+                        Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE,
+                        Constants.MEAN_RGB, Constants.STD_RGB,
+                        inTensorBuffer, 0 // 单帧无偏移
+                );
+
+                Tensor inputTensor = Tensor.fromBlob(inTensorBuffer, new long[]{1, 3, Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE});
+
+                // 7. 单帧推理
+                Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
+                float[] frameScores = outputTensor.getDataAsFloatArray();
+
+                // 8. 累计结果（可选：取平均或最大值）
+                for (int i = 0; i < frameScores.length; i++) {
+                    accumulatedScores[i] += frameScores[i]; // 或 Math.max(accumulatedScores[i], frameScores[i])
+                }
+
+                processedFrames++;
+                totalFrames++;
+            }
+
+            final long inferenceTime = SystemClock.elapsedRealtime() - startTime;
+
+            // 9. 计算平均得分（如果累计方式为求和）
+            if (processedFrames > 0) {
+                for (int i = 0; i < accumulatedScores.length; i++) {
+                    accumulatedScores[i] /= processedFrames;
+                }
+            }
+
+            // 10. 排序结果（与原逻辑一致）
+            Integer scoresIdx[] = new Integer[accumulatedScores.length];
+            for (int i = 0; i < scoresIdx.length; i++) scoresIdx[i] = i;
+            Arrays.sort(scoresIdx, (o1, o2) -> Float.compare(accumulatedScores[o2], accumulatedScores[o1]));
+
+            return new Pair<>(scoresIdx, inferenceTime);
+
     }
 
     @Override
