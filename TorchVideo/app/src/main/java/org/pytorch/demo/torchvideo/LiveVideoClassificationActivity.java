@@ -36,6 +36,8 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
         private Module mModule = null;
         private TextView mResultView;
         private int mFrameCount = 0;
+        private int mProcessedFrames = 0;
+        private float[] mAccumulatedScores;
         private FloatBuffer inTensorBuffer;
 
 
@@ -94,60 +96,97 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
         @WorkerThread
         @Nullable
         protected AnalysisResult analyzeImage(ImageProxy image, int rotationDegrees) {
+            // 1. 初始化模型和成员变量
             if (mModule == null) {
                 try {
-                    mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "video_classification.ptl"));
+                    mModule = LiteModuleLoader.load(MainActivity.assetFilePath(
+                            getApplicationContext(), "tt.ptl"));
                 } catch (IOException e) {
                     return null;
                 }
+                mFrameCount = 0;
+                mAccumulatedScores = new float[Constants.NUM_CLASSES]; // 需要定义常量
             }
 
-            if (mFrameCount == 0)
-                inTensorBuffer = Tensor.allocateFloatBuffer(Constants.MODEL_INPUT_SIZE);
-
-            Bitmap bitmap = imgToBitmap(image.getImage());
-            Matrix matrix = new Matrix();
-            matrix.postRotate(90.0f);
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-
-            float ratio = Math.min(bitmap.getWidth(), bitmap.getHeight()) / 160.0f;
-            Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() / ratio), (int)(bitmap.getHeight() / ratio), true);
-            Bitmap centerCroppedBitmap = Bitmap.createBitmap(resizedBitmap,
-                    resizedBitmap.getWidth() > resizedBitmap.getHeight() ? (resizedBitmap.getWidth() - resizedBitmap.getHeight()) / 2 : 0,
-                    resizedBitmap.getHeight() > resizedBitmap.getWidth() ? (resizedBitmap.getHeight() - resizedBitmap.getWidth()) / 2 : 0,
-                    Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE);
-
-            TensorImageUtils.bitmapToFloatBuffer(centerCroppedBitmap, 0, 0,
-                    Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE, Constants.MEAN_RGB, Constants.STD_RGB, inTensorBuffer,
-                    (Constants.COUNT_OF_FRAMES_PER_INFERENCE - 1) * mFrameCount * Constants.TARGET_VIDEO_SIZE * Constants.TARGET_VIDEO_SIZE);
-
-            mFrameCount++;
-            if (mFrameCount < 4) {
+            // 2. 跳帧逻辑（每 FRAME_SKIP_INTERVAL 帧处理1帧）
+            final int FRAME_SKIP_INTERVAL = 10; // 可配置参数
+            if (mFrameCount++ % FRAME_SKIP_INTERVAL != 0) {
+                //image.close();
                 return null;
             }
 
-            mFrameCount = 0;
-            Tensor inputTensor = Tensor.fromBlob(inTensorBuffer, new long[]{1, 3, Constants.COUNT_OF_FRAMES_PER_INFERENCE, 160, 160});
+            // 3. 单帧预处理
+            Bitmap bitmap = imgToBitmap(image.getImage());
+            try {
+                // 图像旋转调整
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90.0f);
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                        bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
-            final long startTime = SystemClock.elapsedRealtime();
-            Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
-            final long inferenceTime = SystemClock.elapsedRealtime() - startTime;
+                // 缩放和中心裁剪
+                float ratio = Math.min(bitmap.getWidth(), bitmap.getHeight()) /
+                        (float) Constants.TARGET_VIDEO_SIZE;
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap,
+                        (int)(bitmap.getWidth() / ratio),
+                        (int)(bitmap.getHeight() / ratio), true);
 
-            final float[] scores = outputTensor.getDataAsFloatArray();
-            Integer scoresIdx[] = new Integer[scores.length];
-            for (int i = 0; i < scores.length; i++)
-                scoresIdx[i] = i;
+                Bitmap centerCroppedBitmap = Bitmap.createBitmap(resizedBitmap,
+                        resizedBitmap.getWidth() > resizedBitmap.getHeight() ?
+                                (resizedBitmap.getWidth() - resizedBitmap.getHeight()) / 2 : 0,
+                        resizedBitmap.getHeight() > resizedBitmap.getWidth() ?
+                                (resizedBitmap.getHeight() - resizedBitmap.getWidth()) / 2 : 0,
+                        Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE);
 
-            Arrays.sort(scoresIdx, new Comparator<Integer>() {
-                @Override public int compare(final Integer o1, final Integer o2) {
-                    return Float.compare(scores[o2], scores[o1]);
+                // 4. 转换到Tensor输入
+                FloatBuffer inTensorBuffer = Tensor.allocateFloatBuffer(
+                        3 * Constants.TARGET_VIDEO_SIZE * Constants.TARGET_VIDEO_SIZE);
+                TensorImageUtils.bitmapToFloatBuffer(
+                        centerCroppedBitmap, 0, 0,
+                        Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE,
+                        Constants.MEAN_RGB, Constants.STD_RGB,
+                        inTensorBuffer, 0);
+
+                Tensor inputTensor = Tensor.fromBlob(inTensorBuffer,
+                        new long[]{1, 3, Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE});
+
+                // 5. 单帧推理
+                final long startTime = SystemClock.elapsedRealtime();
+                Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
+                final float[] frameScores = outputTensor.getDataAsFloatArray();
+
+                // 6. 累计分数（最大值策略）
+                for (int i = 0; i < mAccumulatedScores.length; i++) {
+                    mAccumulatedScores[i] = Math.max(mAccumulatedScores[i], frameScores[i]);
                 }
-            });
 
-            String tops[] = new String[Constants.TOP_COUNT];
-            for (int j = 0; j < Constants.TOP_COUNT; j++)
-                tops[j] = MainActivity.getClasses()[scoresIdx[j]];
-            final String result = String.join(", ", tops);
-            return new AnalysisResult(String.format("%s - %dms", result, inferenceTime));
+                // 7. 每处理N帧后返回结果（例如每秒更新一次）
+                final int FRAMES_PER_RESULT = 1; // 假设30fps
+                if (mProcessedFrames++ % FRAMES_PER_RESULT == 0) {
+                    Integer scoresIdx[] = new Integer[mAccumulatedScores.length];
+                    for (int i = 0; i < scoresIdx.length; i++) scoresIdx[i] = i;
+
+                    Arrays.sort(scoresIdx, (o1, o2) ->
+                            Float.compare(mAccumulatedScores[o2], mAccumulatedScores[o1]));
+
+                    String tops[] = new String[Constants.TOP_COUNT];
+                    for (int j = 0; j < Constants.TOP_COUNT; j++)
+                        tops[j] = MainActivity.getClasses()[scoresIdx[j]];
+
+                    // 重置累计结果
+                    Arrays.fill(mAccumulatedScores, 0f);
+
+                    return new AnalysisResult(
+                            String.format("%s - %dms",
+                                    String.join(", ", tops),
+                                    SystemClock.elapsedRealtime() - startTime));
+                }
+            }
+            finally {
+                // 8. 资源清理
+                if (bitmap != null) bitmap.recycle();
+                //image.close();
+            }
+            return null;
         }
     }
