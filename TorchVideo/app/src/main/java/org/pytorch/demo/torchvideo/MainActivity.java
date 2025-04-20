@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         FloatBuffer inTensorBuffer = Tensor.allocateFloatBuffer(3 * Constants.TARGET_VIDEO_SIZE * Constants.TARGET_VIDEO_SIZE);
 
         // 3. 初始化结果存储（假设模型输出类别数固定）
-        float[] accumulatedScores = new float[/*Constants.NUM_CLASSES*/ 4]; // 需定义常量
+        float[] accumulatedScores = new float[Constants.NUM_CLASSES]; // 需定义常量
         Arrays.fill(accumulatedScores, 0f);
 
         final long startTime = SystemClock.elapsedRealtime();
