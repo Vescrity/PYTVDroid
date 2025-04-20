@@ -1,6 +1,6 @@
 # PYTVDroid
-Fork of PyTorch Video Classification on Android to make it use for https://github.com/JessieChenHui/titration  
-https://github.com/pytorch/android-demo-app/tree/master/TorchVideo
+
+Fork of [PyTorch Video Classification on Android](https://github.com/pytorch/android-demo-app/tree/master/TorchVideo) to make it use for https://github.com/JessieChenHui/titration  
 
 
 ## Quick Start
