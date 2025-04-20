@@ -1,5 +1,5 @@
 # PYTVDroid
-Fork of PyTorch Video Classification on Android  
+Fork of PyTorch Video Classification on Android to make it use for https://github.com/JessieChenHui/titration  
 https://github.com/pytorch/android-demo-app/tree/master/TorchVideo
 
 
@@ -21,6 +21,7 @@ git clone https://github.com/Vescrity/PTVDModel.git
 ```
 
 2. read README of that repo.
+3. move the tt.ptl to `TorchVideo/app/src/main/assets/`
 
 ### 2. Build with Android Studio
 
@@ -30,6 +31,13 @@ git clone https://github.com/Vescrity/PTVDModel.git
 `Settings > Build, Execution ... > Build Tools > Gradle > Gradle Projects > Gradle > Gradle JDK`
 
 ### 3. Run the app
+
+## TODO
+
+- [x] Basic Functions
+- [ ] Multiple models
+- [ ] analyze frequency of Live Mode
+
 
 ---
 
