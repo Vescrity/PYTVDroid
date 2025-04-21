@@ -81,11 +81,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         setContentView(R.layout.activity_main);
 
         try {
-            //mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "video_classification.ptl"));
-
-            //BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("classes.txt")));
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "tt.ptl"));
-            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("test.txt")));
+            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE));
+            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open(Constants.CLASSES_TXT)));
 
             String line;
             List<String> classes = new ArrayList<>();
@@ -251,8 +248,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 @Override
                 public void run() {
                     mTextView.setVisibility(View.VISIBLE);
-                    final int COLORLIST[] = {0xaa3355ff,0xaa33aa55,0xaaaaaa00,0xaaff5555};
-                    mTextView.setBackgroundColor(COLORLIST[scoresIdx[0]]);
+                    mTextView.setBackgroundColor(Constants.COLOR_LIST[scoresIdx[0]]);
                     mTextView.setText(
                             String.format("%.2fs: %s (Cost: %dms)",
                                     finalCurrentTimeMs / 1000.0,

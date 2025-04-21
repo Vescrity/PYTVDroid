@@ -43,9 +43,14 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
 
     static class AnalysisResult {
             private final String mResults;
+            private int mId = 0;
 
             public AnalysisResult(String results) {
                 mResults = results;
+            }
+            public AnalysisResult(String results, int id) {
+                mResults = results;
+                mId = id;
             }
         }
 
@@ -65,6 +70,7 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
         @Override
         protected void applyToUiAnalyzeImageResult(AnalysisResult result) {
             mResultView.setText(result.mResults);
+            mResultView.setBackgroundColor(Constants.COLOR_LIST[result.mId]);
             mResultView.invalidate();
         }
 
@@ -100,7 +106,7 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
             if (mModule == null) {
                 try {
                     mModule = LiteModuleLoader.load(MainActivity.assetFilePath(
-                            getApplicationContext(), "tt.ptl"));
+                            getApplicationContext(), Constants.PTL_FILE));
                 } catch (IOException e) {
                     return null;
                 }
@@ -161,7 +167,7 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
                 }
 
                 // 7. 每处理N帧后返回结果（例如每秒更新一次）
-                final int FRAMES_PER_RESULT = 1; // 假设30fps
+                final int FRAMES_PER_RESULT = 1;
                 if (mProcessedFrames++ % FRAMES_PER_RESULT == 0) {
                     Integer scoresIdx[] = new Integer[mAccumulatedScores.length];
                     for (int i = 0; i < scoresIdx.length; i++) scoresIdx[i] = i;
@@ -177,14 +183,15 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
                     Arrays.fill(mAccumulatedScores, 0f);
 
                     return new AnalysisResult(
-                            String.format("%s - %dms",
-                                    String.join(", ", tops),
-                                    SystemClock.elapsedRealtime() - startTime));
+                            String.format("Status: %s (Cost: %dms)",
+                                    tops[0],SystemClock.elapsedRealtime() - startTime),
+                                    scoresIdx[0]);
                 }
             }
             finally {
                 // 8. 资源清理
                 if (bitmap != null) bitmap.recycle();
+                // uncomment it will cause crash
                 //image.close();
             }
             return null;
