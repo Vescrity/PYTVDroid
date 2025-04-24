@@ -100,12 +100,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mTextView.setVisibility(View.INVISIBLE);
 
         mButtonTest = findViewById(R.id.testButton);
-        mButtonTest.setText(String.format("Test 1/%d", mTestVideos.length));
+        mButtonTest.setText(String.format("测试 1/%d", mTestVideos.length));
         mButtonTest.setEnabled(false);
         mButtonTest.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mTestVideoIndex = (mTestVideoIndex + 1) % mTestVideos.length;
-                mButtonTest.setText(String.format("Test %d/%d", mTestVideoIndex + 1, mTestVideos.length));
+                mButtonTest.setText(String.format("测试 %d/%d", mTestVideoIndex + 1, mTestVideos.length));
                 mButtonTest.setEnabled(false);
                 mTextView.setText("");
                 mTextView.setVisibility(View.INVISIBLE);
@@ -144,6 +144,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onClick(View v) {
                 mStopThread = true;
                 final Intent intent = new Intent(MainActivity.this, LiveVideoClassificationActivity.class);
+                startActivity(intent);
+            }
+        });
+        final Button buttonSettings = findViewById(R.id.settingButton);
+        buttonSettings.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mStopThread = true;
+                final Intent intent = new Intent(MainActivity.this, Settings.class);
                 startActivity(intent);
             }
         });

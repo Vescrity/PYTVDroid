@@ -11,8 +11,9 @@
         android:id="@+id/videoView"
         android:layout_width="350dp"
         android:layout_height="350dp"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="48dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.508"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -79,20 +80,34 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:layout_width="366dp"
-        android:layout_height="106dp"
-        android:layout_marginLeft="60dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="369dp"
+        android:layout_height="94dp"
+        android:layout_marginTop="64dp"
         android:gravity="center"
         android:lines="3"
         android:minLines="3"
         android:singleLine="false"
-        android:text="To play pre-recorded videos, tap Test\nTo select video from Camera Roll, tap Select\nTo see live video classification, tap Live"
+        android:text="@string/helpText"
         android:textAlignment="viewStart"
         android:textColor="#9B9A9A"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.538"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settingButton" />
+
+    <Button
+        android:id="@+id/settingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/selectButton" />
+
+    <LinearLayout
+        android:layout_width="409dp"
+        android:layout_height="14dp"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="612dp"></LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
