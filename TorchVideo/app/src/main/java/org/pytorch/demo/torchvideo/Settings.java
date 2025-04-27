@@ -9,5 +9,8 @@ public class Settings extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
+
+        findViewById(R.id.returnButton).setOnClickListener(v -> finish());
+
     }
 }
