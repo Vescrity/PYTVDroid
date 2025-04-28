@@ -110,4 +110,14 @@
         tools:layout_editor_absoluteX="1dp"
         tools:layout_editor_absoluteY="612dp"></LinearLayout>
 
+    <TextView
+        android:id="@+id/pathText"
+        android:layout_width="55dp"
+        android:layout_height="14dp"
+        android:text="TextView"
+        android:textColor="#F6EDED"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="651dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

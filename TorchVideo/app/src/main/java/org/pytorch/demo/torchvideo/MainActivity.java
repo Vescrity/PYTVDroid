@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onClick(View v) {
                 mStopThread = true;
                 final Intent intent = new Intent(MainActivity.this, Settings.class);
-                startActivity(intent);
+                startActivityForResult(intent,1);
             }
         });
 
@@ -196,6 +196,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         super.onPause();
 
         mVideoView.pause();
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
     }
 
     @Override
@@ -352,12 +357,25 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && data != null) {
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            // 获取选择的文件路径
+            Uri uri = data.getData();
+            if (uri != null) {
+                String p = uri.getPath();
+                mModule = LiteModuleLoader.load(p);
+                // 处理新的文件路径
+                TextView mText = findViewById(R.id.pathText);
+                mText.setText(p);
+            }
+        }
+        else if (resultCode == RESULT_OK && data != null) {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri.toString().contains("video")) {
                 mVideoUri = selectedMediaUri;
                 startVideo();
             }
         }
+
+
     }
 }
