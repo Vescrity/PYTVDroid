@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Uri mVideoUri;
     private Thread mThread;
     private boolean mStopThread;
+    private final int REQUEST_SETTING = 0x5ee;
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         setContentView(R.layout.activity_main);
 
         try {
+            String t= MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
             mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE));
             BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open(Constants.CLASSES_TXT)));
 
@@ -95,9 +97,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             Log.e(TAG, "Error reading model file", e);
             finish();
         }
-
+        Config mConfig = Config.getInstance();
         mTextView = findViewById(R.id.textView);
         mTextView.setVisibility(View.INVISIBLE);
+        final Button buttonSettings = findViewById(R.id.settingButton);
+        buttonSettings.setText(getString(R.string.settings));
+        final TextView ptlPathText = findViewById(R.id.pathText);
+        ptlPathText.setText(mConfig.ptlPath);
 
         mButtonTest = findViewById(R.id.testButton);
         mButtonTest.setText(String.format("测试 1/%d", mTestVideos.length));
@@ -147,12 +153,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 startActivity(intent);
             }
         });
-        final Button buttonSettings = findViewById(R.id.settingButton);
+
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 mStopThread = true;
                 final Intent intent = new Intent(MainActivity.this, Settings.class);
-                startActivityForResult(intent,1);
+                startActivityForResult(intent,REQUEST_SETTING);
             }
         });
 
@@ -357,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_SETTING && resultCode == RESULT_OK) {
             // 获取选择的文件路径
             Uri uri = data.getData();
             if (uri != null) {

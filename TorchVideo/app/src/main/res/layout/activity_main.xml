@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
     tools:context="org.pytorch.demo.torchvideo.MainActivity">
 
     <VideoView
@@ -70,6 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:background="#FF2356E7"
+        android:gravity="center"
         android:lines="2"
         android:minLines="2"
         android:singleLine="false"
@@ -80,6 +80,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="369dp"
         android:layout_height="94dp"
         android:layout_marginTop="64dp"
@@ -90,6 +91,7 @@
         android:text="@string/helpText"
         android:textAlignment="viewStart"
         android:textColor="#9B9A9A"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settingButton" />
@@ -103,21 +105,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/selectButton" />
 
-    <LinearLayout
-        android:layout_width="409dp"
-        android:layout_height="14dp"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="1dp"
-        tools:layout_editor_absoluteY="612dp"></LinearLayout>
-
     <TextView
         android:id="@+id/pathText"
-        android:layout_width="55dp"
-        android:layout_height="14dp"
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:gravity="center"
         android:text="TextView"
         android:textColor="#F6EDED"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="651dp" />
+        app:layout_constraintTop_toBottomOf="@+id/settingButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

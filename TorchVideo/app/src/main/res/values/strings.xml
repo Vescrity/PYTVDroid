@@ -7,4 +7,6 @@
     <string name="live">拍摄</string>
     <string name="helpText">总之是一些说明</string>
     <string name="settings">设置</string>
+    <string name="modelPath">模型路径</string>
+    <string name="classPath">分类文件</string>
 </resources>

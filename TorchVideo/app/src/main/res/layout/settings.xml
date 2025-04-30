@@ -38,10 +38,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Path" />
+                android:text="@string/modelPath" />
 
             <TextView
-                android:id="@+id/textView3"
+                android:id="@+id/ptlPath"
                 android:layout_width="173dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -62,25 +62,11 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/textView6"
+                android:id="@+id/ClassPathTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="TextView" />
-
-            <Space
-                android:layout_width="124dp"
-                android:layout_height="46dp"
-                android:layout_weight="1" />
-
-            <EditText
-                android:id="@+id/editTextNumber2"
-                android:layout_width="72dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ems="10"
-                android:inputType="number" />
-
+                android:text="@string/classPath" />
         </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
