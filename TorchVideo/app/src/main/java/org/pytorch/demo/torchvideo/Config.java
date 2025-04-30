@@ -1,8 +1,13 @@
 package org.pytorch.demo.torchvideo;
 
+
+
+
+
 public class Config {
     private static Config instance;
     public String ptlPath = "Default";
+    public String classPath = "Default";
 
     private Config() {}
 
