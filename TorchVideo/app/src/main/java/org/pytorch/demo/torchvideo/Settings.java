@@ -14,26 +14,45 @@ import android.database.Cursor;
 import android.provider.MediaStore;
 
 import org.w3c.dom.Text;
-
+import java.io.File;
 public class Settings extends AppCompatActivity {
     private static final int FILE_SELECT_CODE = 0xbed;
+    private static final int CLASS_FILE_SELECT_CODE = 0xced;
+    private void updateUI(){
+        Config mConfig = Config.getInstance();
 
+        final TextView mPtlPath = findViewById(R.id.ptlPath);
+        mPtlPath.setText(mConfig.ptlPath);
+        final TextView mClassPath = findViewById(R.id.classPath);
+        mClassPath.setText(mConfig.classPath);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
-        Config mConfig = Config.getInstance();
         findViewById(R.id.ptlFileButton).setOnClickListener(v -> openFileChooser());
+        findViewById(R.id.classFileButton).setOnClickListener(v -> openClassFileChooser());
         findViewById(R.id.returnButton).setOnClickListener(v -> finish());
-        final TextView mPtlPath = findViewById(R.id.ptlPath);
-        mPtlPath.setText(mConfig.ptlPath);
+        updateUI();
 
     }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        updateUI();
+    }
+
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/octet-stream"); // 选择任意文件
+        intent.setType("application/octet-stream");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, "选择文件"), FILE_SELECT_CODE);
+    }
+    private void openClassFileChooser() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("application/octet-stream");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "选择文件"), CLASS_FILE_SELECT_CODE);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -41,11 +60,21 @@ public class Settings extends AppCompatActivity {
         if (requestCode == FILE_SELECT_CODE && resultCode == RESULT_OK) {
             Uri uri = data.getData();
             String filePath = GetFilePathFromUri.getFileAbsolutePath(getApplicationContext(), uri);
+            /*File file = new File(getApplicationContext().getFilesDir(), String.valueOf(uri));
+            String filePath = file.getAbsolutePath();*/
             Config.getInstance().ptlPath = filePath;
             Intent resultIntent = new Intent();
             resultIntent.setData(Uri.parse(filePath));
             setResult(RESULT_OK, resultIntent);
-            finish(); // 返回到 MainActivity
+        }
+        else if (requestCode == CLASS_FILE_SELECT_CODE && resultCode == RESULT_OK) {
+            Uri uri = data.getData();
+            String filePath = GetFilePathFromUri.getFileAbsolutePath(getApplicationContext(), uri);
+
+            Config.getInstance().classPath = filePath;
+            Intent resultIntent = new Intent();
+            resultIntent.setData(Uri.parse(filePath));
+            setResult(RESULT_OK, resultIntent);
         }
     }
 

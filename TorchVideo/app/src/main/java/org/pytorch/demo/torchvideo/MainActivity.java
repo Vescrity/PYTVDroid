@@ -25,22 +25,25 @@ import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.FloatBuffer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
+import java.io.FileInputStream;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private static String[] mClasses;
     private final String TAG = MainActivity.class.getSimpleName();
     private final String[] mTestVideos = {"video1"};
+    private final int REQUEST_SETTING = 0x5ee;
     private Button mButtonPauseResume;
     private Button mButtonTest;
     private Module mModule = null;
@@ -48,10 +51,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private List<String> mResults = new ArrayList<>();
     private VideoView mVideoView;
     private TextView mTextView;
+    private Button buttonSettings;
+    private TextView ptlPathText;
     private Uri mVideoUri;
     private Thread mThread;
     private boolean mStopThread;
-    private final int REQUEST_SETTING = 0x5ee;
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -75,17 +79,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public static String[] getClasses() {
         return mClasses;
     }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+    private void updateConfig() {
         try {
-            String t= MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE));
-            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open(Constants.CLASSES_TXT)));
-
+            Config mConfig = Config.getInstance();
+            mModule = LiteModuleLoader.load(mConfig.ptlPath);
+            BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(new File(mConfig.classPath).toPath())));
             String line;
             List<String> classes = new ArrayList<>();
             while ((line = br.readLine()) != null) {
@@ -93,19 +91,35 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
             mClasses = new String[classes.size()];
             classes.toArray(mClasses);
+
+            mTextView.setVisibility(View.INVISIBLE);
+            buttonSettings.setText(getString(R.string.settings));
+            ptlPathText.setText(mConfig.ptlPath);
+
         } catch (IOException e) {
             Log.e(TAG, "Error reading model file", e);
             finish();
         }
-        Config mConfig = Config.getInstance();
-        mTextView = findViewById(R.id.textView);
-        mTextView.setVisibility(View.INVISIBLE);
-        final Button buttonSettings = findViewById(R.id.settingButton);
-        buttonSettings.setText(getString(R.string.settings));
-        final TextView ptlPathText = findViewById(R.id.pathText);
-        ptlPathText.setText(mConfig.ptlPath);
-
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        buttonSettings = findViewById(R.id.settingButton);
+        ptlPathText = findViewById(R.id.pathText);
         mButtonTest = findViewById(R.id.testButton);
+        mTextView = findViewById(R.id.textView);
+        Config mConfig = Config.getInstance();
+        try {
+            mConfig.ptlPath = MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
+            mConfig.classPath = MainActivity.assetFilePath(getApplicationContext(), Constants.CLASSES_TXT);
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading model file", e);
+            finish();
+        }
+
+        updateConfig();
+
         mButtonTest.setText(String.format("测试 1/%d", mTestVideos.length));
         mButtonTest.setEnabled(false);
         mButtonTest.setOnClickListener(new View.OnClickListener() {
@@ -206,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onResume() {
         super.onResume();
-
+        updateConfig();
     }
 
     @Override
@@ -363,18 +377,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_SETTING && resultCode == RESULT_OK) {
-            // 获取选择的文件路径
-            Uri uri = data.getData();
-            if (uri != null) {
-                String p = uri.getPath();
-                mModule = LiteModuleLoader.load(p);
-                // 处理新的文件路径
-                TextView mText = findViewById(R.id.pathText);
-                mText.setText(p);
-            }
-        }
-        else if (resultCode == RESULT_OK && data != null) {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_SETTING && data != null) {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri.toString().contains("video")) {
                 mVideoUri = selectedMediaUri;
