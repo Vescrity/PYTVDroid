@@ -44,13 +44,13 @@ public class Settings extends AppCompatActivity {
 
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/octet-stream");
+        intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, "选择文件"), FILE_SELECT_CODE);
     }
     private void openClassFileChooser() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("application/octet-stream");
+        intent.setType("text/plain");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(Intent.createChooser(intent, "选择文件"), CLASS_FILE_SELECT_CODE);
     }
