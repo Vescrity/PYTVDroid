@@ -9,4 +9,5 @@
     <string name="settings">设置</string>
     <string name="modelPath">模型路径</string>
     <string name="classPath">分类文件</string>
+    <string name="vibration">振动</string>
 </resources>

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.VideoView;
 import android.content.Context;
@@ -18,13 +19,16 @@ import java.io.File;
 public class Settings extends AppCompatActivity {
     private static final int FILE_SELECT_CODE = 0xbed;
     private static final int CLASS_FILE_SELECT_CODE = 0xced;
+    private Config mConfig;
     private void updateUI(){
-        Config mConfig = Config.getInstance();
+        mConfig = Config.getInstance();
 
         final TextView mPtlPath = findViewById(R.id.ptlPath);
         mPtlPath.setText(mConfig.ptlPath);
         final TextView mClassPath = findViewById(R.id.classPath);
         mClassPath.setText(mConfig.classPath);
+        final Switch mVibration = findViewById(R.id.vibrationSwitch);
+        mVibration.setChecked(mConfig.enableVibration);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +44,12 @@ public class Settings extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         updateUI();
+    }
+    @Override
+    protected void onStop(){
+        super.onStop();
+        final Switch mVibration = findViewById(R.id.vibrationSwitch);
+        mConfig.enableVibration = mVibration.isChecked();
     }
 
     private void openFileChooser() {

@@ -8,6 +8,7 @@ public class Config {
     private static Config instance;
     public String ptlPath = "Default";
     public String classPath = "Default";
+    public boolean enableVibration = true;
 
     private Config() {}
 

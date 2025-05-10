@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.io.FileInputStream;
+import org.pytorch.demo.torchvideo.BaseUtils;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private static String[] mClasses;
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Uri mVideoUri;
     private Thread mThread;
     private boolean mStopThread;
+    private int lastIndex = 0;
+    private Config mConfig;
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
     private void updateConfig() {
         try {
-            Config mConfig = Config.getInstance();
+            mConfig = Config.getInstance();
             mModule = LiteModuleLoader.load(mConfig.ptlPath);
             BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(new File(mConfig.classPath).toPath())));
             String line;
@@ -109,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         ptlPathText = findViewById(R.id.pathText);
         mButtonTest = findViewById(R.id.testButton);
         mTextView = findViewById(R.id.textView);
-        Config mConfig = Config.getInstance();
+        mConfig = Config.getInstance();
         try {
             mConfig.ptlPath = MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
             mConfig.classPath = MainActivity.assetFilePath(getApplicationContext(), Constants.CLASSES_TXT);
@@ -281,7 +284,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 @Override
                 public void run() {
                     mTextView.setVisibility(View.VISIBLE);
+                    int currentIndex = scoresIdx[0];
+                    if(lastIndex != currentIndex && mConfig.enableVibration){BaseUtils.vibrate(getApplicationContext(),1000);}
                     mTextView.setBackgroundColor(Constants.COLOR_LIST[scoresIdx[0]]);
+                    lastIndex = scoresIdx[0];
                     mTextView.setText(
                             String.format("%.2fs: %s (Cost: %dms)",
                                     finalCurrentTimeMs / 1000.0,
