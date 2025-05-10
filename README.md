@@ -22,6 +22,7 @@ git clone https://github.com/Vescrity/PTVDModel.git
 
 2. read README of that repo.
 3. move the tt.ptl to `TorchVideo/app/src/main/assets/`
+4. Get a sample video and move it to `TorchVideo/app/src/main/res/raw/video1.mp4`
 
 ### 2. Build with Android Studio
 
@@ -35,7 +36,9 @@ git clone https://github.com/Vescrity/PTVDModel.git
 ## TODO
 
 - [x] Basic Functions
-- [ ] Multiple models
+- [x] Multiple models
+- [x] Config
+- [ ] Config Save & Load
 - [ ] analyze frequency of Live Mode
 
 
