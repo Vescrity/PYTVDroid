@@ -9,6 +9,7 @@ public class Config {
     public String ptlPath = "Default";
     public String classPath = "Default";
     public boolean enableVibration = true;
+    public int vibrationTime = 500;
 
     private Config() {}
 

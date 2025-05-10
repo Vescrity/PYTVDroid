@@ -26,7 +26,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="82dp" />
+            android:layout_height="12dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,20 +84,46 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <Switch
+            android:id="@+id/vibrationSwitch"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:text="@string/vibration" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="horizontal">
 
-            <Switch
-                android:id="@+id/vibrationSwitch"
+        </LinearLayout>
+
+        <LinearLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <SeekBar
+                android:id="@+id/vibTimeSeek"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="9950" /> <!-- 10000 - 50 -->
+
+            <TextView
+                android:id="@+id/vibTimeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Vibration" />
-
+                android:layout_marginTop="16dp"
+                android:text="T: 50" />
         </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,18 +8,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.VideoView;
-import android.content.Context;
-import android.database.Cursor;
+import android.widget.SeekBar;
 
-import android.provider.MediaStore;
-
-import org.w3c.dom.Text;
-import java.io.File;
 public class Settings extends AppCompatActivity {
     private static final int FILE_SELECT_CODE = 0xbed;
     private static final int CLASS_FILE_SELECT_CODE = 0xced;
     private Config mConfig;
+    private SeekBar mVibTimeSeek;
+    private TextView mVibTimeText;
+
+    private int getVibTime(){return mVibTimeSeek.getProgress() + 50;}
+    private void setVibTime(int v){
+        mVibTimeSeek.setProgress(v - 50);
+        mVibTimeText.setText("振动时长: " + getVibTime() + " ms");
+    }
     private void updateUI(){
         mConfig = Config.getInstance();
 
@@ -29,15 +31,36 @@ public class Settings extends AppCompatActivity {
         mClassPath.setText(mConfig.classPath);
         final Switch mVibration = findViewById(R.id.vibrationSwitch);
         mVibration.setChecked(mConfig.enableVibration);
+        setVibTime(mConfig.vibrationTime);
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings);
+        mVibTimeSeek = findViewById(R.id.vibTimeSeek);
+        mVibTimeText = findViewById(R.id.vibTimeText);
         findViewById(R.id.ptlFileButton).setOnClickListener(v -> openFileChooser());
         findViewById(R.id.classFileButton).setOnClickListener(v -> openClassFileChooser());
         findViewById(R.id.returnButton).setOnClickListener(v -> finish());
+
         updateUI();
+        mVibTimeSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mVibTimeText.setText("振动时长: " + getVibTime() + " ms");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // 可以加入处理
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // 可以加入处理
+            }
+        });
 
     }
     @Override
@@ -50,6 +73,7 @@ public class Settings extends AppCompatActivity {
         super.onStop();
         final Switch mVibration = findViewById(R.id.vibrationSwitch);
         mConfig.enableVibration = mVibration.isChecked();
+        mConfig.vibrationTime = getVibTime();
     }
 
     private void openFileChooser() {

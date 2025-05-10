@@ -19,13 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
 import org.pytorch.Module;
-import org.pytorch.PyTorchAndroid;
 import org.pytorch.Tensor;
 import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,10 +33,8 @@ import java.nio.FloatBuffer;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.io.FileInputStream;
-import org.pytorch.demo.torchvideo.BaseUtils;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private static String[] mClasses;
@@ -111,11 +107,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonSettings = findViewById(R.id.settingButton);
         ptlPathText = findViewById(R.id.pathText);
         mButtonTest = findViewById(R.id.testButton);
-        mTextView = findViewById(R.id.textView);
+        mTextView = findViewById(R.id.vibTimeText);
+        ConfigManager.loadConfig(getApplicationContext());
         mConfig = Config.getInstance();
         try {
-            mConfig.ptlPath = MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
-            mConfig.classPath = MainActivity.assetFilePath(getApplicationContext(), Constants.CLASSES_TXT);
+            if(Objects.equals(mConfig.classPath, "Default"))
+                mConfig.classPath = MainActivity.assetFilePath(getApplicationContext(), Constants.CLASSES_TXT);
+            if(Objects.equals(mConfig.ptlPath, "Default"))
+                mConfig.ptlPath = MainActivity.assetFilePath(getApplicationContext(), Constants.PTL_FILE);
+
         } catch (IOException e) {
             Log.e(TAG, "Error reading model file", e);
             finish();
@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onStop() {
         super.onStop();
+        ConfigManager.saveConfig(mConfig, getApplicationContext());
 
         stopVideo();
     }
@@ -285,13 +286,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 public void run() {
                     mTextView.setVisibility(View.VISIBLE);
                     int currentIndex = scoresIdx[0];
-                    if(lastIndex != currentIndex && mConfig.enableVibration){BaseUtils.vibrate(getApplicationContext(),1000);}
+                    if(lastIndex != currentIndex && mConfig.enableVibration)
+                        BaseUtils.vibrate(getApplicationContext(), mConfig.vibrationTime);
                     mTextView.setBackgroundColor(Constants.COLOR_LIST[scoresIdx[0]]);
                     lastIndex = scoresIdx[0];
                     mTextView.setText(
                             String.format("%.2fs: %s (Cost: %dms)",
-                                    finalCurrentTimeMs / 1000.0,
-                                    result, inferenceTime));
+                                    finalCurrentTimeMs / 1000.0, result, inferenceTime));
                 }
             });
             mResults.add(result);
