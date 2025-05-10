@@ -33,6 +33,7 @@ Fork of [PyTorch Video Classification on Android](https://github.com/pytorch/and
 - [x] Basic Functions
 - [x] Multiple models
 - [x] Config
+- [ ] Vibration (Partly finished)
 - [ ] Config Save & Load
 - [ ] analyze frequency of Live Mode
 
