@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onClick(View v) {
                 mStopThread = true;
                 final Intent intent = new Intent(MainActivity.this, Settings.class);
-                startActivityForResult(intent,REQUEST_SETTING);
+                startActivityForResult(intent, REQUEST_SETTING);
             }
         });
 
@@ -384,14 +384,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == REQUEST_SETTING && data != null) {
+        if (resultCode == RESULT_OK && requestCode == 1 && data != null) {
             Uri selectedMediaUri = data.getData();
             if (selectedMediaUri.toString().contains("video")) {
                 mVideoUri = selectedMediaUri;
-                startVideo();
             }
         }
-
+        startVideo();
 
     }
 }

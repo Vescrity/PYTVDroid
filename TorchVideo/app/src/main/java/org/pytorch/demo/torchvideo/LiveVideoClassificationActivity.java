@@ -33,12 +33,13 @@ import java.util.Comparator;
 
 
 public class LiveVideoClassificationActivity extends AbstractCameraXActivity<LiveVideoClassificationActivity.AnalysisResult> {
-        private Module mModule = null;
-        private TextView mResultView;
-        private int mFrameCount = 0;
-        private int mProcessedFrames = 0;
-        private float[] mAccumulatedScores;
-        private FloatBuffer inTensorBuffer;
+    private Module mModule = null;
+    private TextView mResultView;
+    private int mFrameCount = 0;
+    private int mProcessedFrames = 0;
+    private float[] mAccumulatedScores;
+    private FloatBuffer inTensorBuffer;
+    private int lastIndex = 0;
 
 
     static class AnalysisResult {
@@ -102,26 +103,21 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
         @WorkerThread
         @Nullable
         protected AnalysisResult analyzeImage(ImageProxy image, int rotationDegrees) {
-            // 1. 初始化模型和成员变量
+            Config mConfig = Config.getInstance();
+
             if (mModule == null) {
-                try {
-                    mModule = LiteModuleLoader.load(MainActivity.assetFilePath(
-                            getApplicationContext(), Constants.PTL_FILE));
-                } catch (IOException e) {
-                    return null;
-                }
+                mModule = LiteModuleLoader.load(mConfig.ptlPath);
                 mFrameCount = 0;
-                mAccumulatedScores = new float[Constants.NUM_CLASSES]; // 需要定义常量
+                mAccumulatedScores = new float[Constants.NUM_CLASSES];
             }
 
-            // 2. 跳帧逻辑（每 FRAME_SKIP_INTERVAL 帧处理1帧）
-            final int FRAME_SKIP_INTERVAL = 10; // 可配置参数
+            // 每 FRAME_SKIP_INTERVAL 帧处理1帧
+            final int FRAME_SKIP_INTERVAL = 5;
             if (mFrameCount++ % FRAME_SKIP_INTERVAL != 0) {
                 //image.close();
                 return null;
             }
 
-            // 3. 单帧预处理
             Bitmap bitmap = imgToBitmap(image.getImage());
             try {
                 // 图像旋转调整
@@ -156,17 +152,14 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
                 Tensor inputTensor = Tensor.fromBlob(inTensorBuffer,
                         new long[]{1, 3, Constants.TARGET_VIDEO_SIZE, Constants.TARGET_VIDEO_SIZE});
 
-                // 5. 单帧推理
                 final long startTime = SystemClock.elapsedRealtime();
                 Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
                 final float[] frameScores = outputTensor.getDataAsFloatArray();
 
-                // 6. 累计分数（最大值策略）
                 for (int i = 0; i < mAccumulatedScores.length; i++) {
                     mAccumulatedScores[i] = Math.max(mAccumulatedScores[i], frameScores[i]);
                 }
 
-                // 7. 每处理N帧后返回结果（例如每秒更新一次）
                 final int FRAMES_PER_RESULT = 1;
                 if (mProcessedFrames++ % FRAMES_PER_RESULT == 0) {
                     Integer scoresIdx[] = new Integer[mAccumulatedScores.length];
@@ -181,15 +174,17 @@ public class LiveVideoClassificationActivity extends AbstractCameraXActivity<Liv
 
                     // 重置累计结果
                     Arrays.fill(mAccumulatedScores, 0f);
-
+                    int currentIndex = scoresIdx[0];
+                    if(lastIndex != currentIndex && mConfig.enableVibration)
+                        BaseUtils.vibrate(getApplicationContext(), mConfig.vibrationTime);
+                    lastIndex = scoresIdx[0];
                     return new AnalysisResult(
-                            String.format("Status: %s (Cost: %dms)",
+                            String.format("%s (耗时: %dms)",
                                     tops[0],SystemClock.elapsedRealtime() - startTime),
                                     scoresIdx[0]);
                 }
             }
             finally {
-                // 8. 资源清理
                 if (bitmap != null) bitmap.recycle();
                 // uncomment it will cause crash
                 //image.close();
