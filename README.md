@@ -15,8 +15,8 @@ Fork of [PyTorch Video Classification on Android](https://github.com/pytorch/and
 
 #### Steps
 
-1. read https://github.com/Vescrity/PTVDModel and get a ptl file.
-1. move the tt.ptl to `TorchVideo/app/src/main/assets/`
+1. read https://github.com/Vescrity/PTVDModel and get a ptl file and move it  the tt.ptl to `TorchVideo/app/src/main/assets/`
+1. OR just execute `./getptl` in this repo.
 1. Get a sample video and move it to `TorchVideo/app/src/main/res/raw/video1.mp4`
 
 ### 2. Build with Android Studio

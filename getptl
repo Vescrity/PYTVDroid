@@ -1,2 +1,3 @@
+#!/bin/bash
 wget https://github.com/Vescrity/PTVDModel/releases/download/test/tt.ptl
 mv tt.ptl TorchVideo/app/src/main/assets
