@@ -6,10 +6,10 @@
     <string name="select">选择</string>
     <string name="live">拍摄</string>
     <string name="helpText">\n
-        ——测试：播放内置演示视频\n
-——选择：从系统中选取视频\n
-——拍摄：从摄像头读取画面\n
-——设置：设置模型与振动等</string>
+        测试：播放内置演示视频\n
+选择：从系统中选取视频\n
+拍摄：从摄像头读取画面\n
+设置：设置模型与振动等</string>
     <string name="settings">设置</string>
     <string name="modelPath">模型路径: </string>
     <string name="classPath">分类文件: </string>
